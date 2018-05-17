@@ -789,10 +789,14 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 
 					} else {
 						/* assume zero motion */
-						corr_vision[0][1] = 0.0f - x_est[1];
-						corr_vision[1][1] = 0.0f - y_est[1];
-						corr_vision[2][1] = 0.0f - z_est[1];
-					}
+//						corr_vision[0][1] = 0.0f - x_est[1];  // msoler
+//						corr_vision[1][1] = 0.0f - y_est[1];
+//						corr_vision[2][1] = 0.0f - z_est[1];
+
+              corr_vision[0][1] = 0.0f;   // msoler NOT asuming zero motion not corr acc data with velocity
+              corr_vision[1][1] = 0.0f;
+              corr_vision[2][1] = 0.0f;
+          }
 
 					vision_updates++;
 				}
@@ -938,8 +942,9 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 		}
 
 		/* check for timeout on FLOW topic */
-		if ((flow_valid || lidar_valid) && t > (flow_time + flow_topic_timeout)) {
-			flow_valid = false;
+    // if ((flow_valid || lidar_valid) && t > (flow_time + flow_topic_timeout)) { // bugg solve it msoler{}
+     if ((flow_valid && lidar_valid) && t > (flow_time + flow_topic_timeout)) {
+     flow_valid = false;
 			warnx("FLOW timeout");
 			mavlink_log_info(mavlink_fd, "[inav] FLOW timeout");
 		}
