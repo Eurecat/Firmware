@@ -1394,7 +1394,7 @@ int commander_thread_main(int argc, char *argv[])
 		set_tune_override(TONE_STARTUP_TUNE); //normal boot tune
 	} else {
 			// sensor diagnostics done continiously, not just at boot so don't warn about any issues just yet
-			status.condition_system_sensors_initialized = Commander::preflightCheck(mavlink_fd, true, true, true, true,
+			status.condition_system_sensors_initialized = Commander::preflightCheck(mavlink_fd, !status->circuit_breaker_engaged_magnetometer_check, true, true, true,
 			checkAirspeed, (status.rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT), !status.circuit_breaker_engaged_gpsfailure_check, false);
 			set_tune_override(TONE_STARTUP_TUNE); //normal boot tune
 	}
@@ -1491,7 +1491,7 @@ int commander_thread_main(int argc, char *argv[])
 				param_get(_param_map_mode_sw, &map_mode_sw_new);
 
 				if (map_mode_sw == 0 && map_mode_sw != map_mode_sw_new && map_mode_sw_new < input_rc_s::RC_INPUT_MAX_CHANNELS && map_mode_sw_new > 0) {
-					status.condition_system_sensors_initialized = Commander::preflightCheck(mavlink_fd, true, true, true, true, checkAirspeed,
+					status.condition_system_sensors_initialized = Commander::preflightCheck(mavlink_fd, !status->circuit_breaker_engaged_magnetometer_check, true, true, true, checkAirspeed,
 							(status.rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT), !status.circuit_breaker_engaged_gpsfailure_check, hotplug_timeout);
 				}
 			}
@@ -1593,11 +1593,11 @@ int commander_thread_main(int argc, char *argv[])
 					/* provide RC and sensor status feedback to the user */
 					if (is_hil_setup(autostart_id)) {
 						/* HIL configuration: check only RC input */
-						(void)Commander::preflightCheck(mavlink_fd, false, false, false, false, false,
+						(void)Commander::preflightCheck(mavlink_fd, !status->circuit_breaker_engaged_magnetometer_check, false, false, false, false,
 								(status.rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT), false, true);
 					} else {
 						/* check sensors also */
-						(void)Commander::preflightCheck(mavlink_fd, true, true, true, true, chAirspeed,
+						(void)Commander::preflightCheck(mavlink_fd, !status->circuit_breaker_engaged_magnetometer_check, true, true, true, chAirspeed,
 								(status.rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT), !status.circuit_breaker_engaged_gpsfailure_check, hotplug_timeout);
 					}
 				}
@@ -2684,6 +2684,8 @@ get_circuit_breaker_params()
 		circuit_breaker_enabled("CBRK_ENGINEFAIL", CBRK_ENGINEFAIL_KEY);
 	status.circuit_breaker_engaged_gpsfailure_check =
 		circuit_breaker_enabled("CBRK_GPSFAIL", CBRK_GPSFAIL_KEY);
+	status.circuit_breaker_engaged_magnetometer_check =
+		circuit_breaker_enabled("CBRK_MAG_CHK", CBRK_MAG_CHK_KEY);
 }
 
 void
@@ -3421,7 +3423,7 @@ void *commander_low_prio_loop(void *arg)
 							checkAirspeed = true;
 						}
 
-						status.condition_system_sensors_initialized = Commander::preflightCheck(mavlink_fd, true, true, true, true, checkAirspeed,
+						status.condition_system_sensors_initialized = Commander::preflightCheck(mavlink_fd, !status->circuit_breaker_engaged_magnetometer_check, true, true, true, checkAirspeed,
 							!(status.rc_input_mode >= vehicle_status_s::RC_IN_MODE_OFF), !status.circuit_breaker_engaged_gpsfailure_check, hotplug_timeout);
 
 						arming_state_transition(&status, &safety, vehicle_status_s::ARMING_STATE_STANDBY, &armed, false /* fRunPreArmChecks */, mavlink_fd);

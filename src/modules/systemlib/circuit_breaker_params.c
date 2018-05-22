@@ -136,6 +136,21 @@ PARAM_DEFINE_INT32(CBRK_ENGINEFAIL, 284953);
 PARAM_DEFINE_INT32(CBRK_GPSFAIL, 240024);
 
 /**
+ * Circuit breaker for magnetometer failure detection
+ *
+ * Setting this parameter to 240025 will disable the magnetometer failure detection.
+ * If this check is enabled, then the sensor check will fail if the magnetometer module
+ * is missing. *
+ 
+ * WARNING: ENABLING THIS CIRCUIT BREAKER IS AT OWN RISK
+ *
+ * @min 0
+ * @max 240025
+ * @group Circuit Breaker
+ */
+PARAM_DEFINE_INT32(CBRK_MAG_CHK, 240025);
+
+/**
  * Circuit breaker for disabling buzzer
  *
  * Setting this parameter to 782097 will disable the buzzer audio notification.
